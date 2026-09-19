@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="昼と夜を選ぶだけ。浮いたお金が今日・今月・年で見える。きょうの自炊貯金。" />
+<meta name="theme-color" content="#2a7a4b" />
+<title>きょうの自炊貯金</title>
+<style>
+  :root {
+    --bg: #f4f1eb;
+    --bg-top: #e8f2eb;
+    --card: #ffffff;
+    --ink: #1a1c19;
+    --muted: #6a6560;
+    --line: #e2dbd0;
+    --accent: #2a7a4b;
+    --accent-dark: #1e5c38;
+    --accent-soft: #e4f2e9;
+    --conv: #3d6ea5;
+    --conv-soft: #e8f0f8;
+    --out: #c45c26;
+    --out-soft: #f8ebe4;
+    --warn: #b54a1e;
+    --shadow: 0 4px 20px rgba(26, 28, 25, 0.06);
+    --radius: 16px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans",
+      "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    background:
+      radial-gradient(900px 320px at 50% -60px, var(--bg-top) 0%, transparent 70%),
+      var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    min-height: 100dvh;
+    padding: 0 0 calc(24px + var(--safe-b));
+  }
+  .app {
+    width: min(100% - 28px, 440px);
+    margin: 0 auto;
+    padding-top: 18px;
+  }
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .brand h1 {
+    font-size: 1.2rem;
+    margin: 0 0 4px;
+    letter-spacing: 0.02em;
+    font-weight: 700;
+  }
+  .catch {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.45;
+    max-width: 18em;
+  }
+  .pill {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+    border: 1px solid #cfe3d5;
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .icon-btn {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    font-size: 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .icon-btn:active { transform: scale(0.96); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .metric {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 14px 12px;
+    box-shadow: var(--shadow);
+  }
+  .metric.hero {
+    grid-column: 1 / -1;
+    background: linear-gradient(145deg, #2a7a4b 0%, #1e5c38 100%);
+    border: none;
+    color: #fff;
+  }
+  .metric .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .metric.hero .label { color: rgba(255,255,255,0.85); }
+  .metric .value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+  .metric.hero .value {
+    font-size: 2.15rem;
+    color: #fff;
+  }
+  .metric .unit {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+  .metric.hero .hint {
+    margin-top: 6px;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.75);
+  }
+
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  section.card h2 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .date-chip {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: #f7f4ef;
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+
+  .meal { margin-bottom: 16px; }
+  .meal:last-child { margin-bottom: 0; }
+  .meal h3 {
+    margin: 0 0 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+  .taps {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .taps button {
+    border: 1.5px solid var(--line);
+    background: #faf9f7;
+    border-radius: 14px;
+    padding: 14px 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--ink);
+    transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .taps button:active { transform: scale(0.97); }
+  .taps button.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .taps button.on.out {
+    background: var(--out);
+    border-color: var(--out);
+  }
+  .taps button.on.conv {
+    background: var(--conv);
+    border-color: var(--conv);
+  }
+  .override {
+    margin-top: 8px;
+  }
+  .override label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .override input,
+  .settings-grid input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fff;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .override input:focus,
+  .settings-grid input:focus {
+    outline: 2px solid var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .history-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0ebe3;
+    font-size: 0.88rem;
+  }
+  .history-list li:last-child { border-bottom: none; padding-bottom: 0; }
+  .history-list li:first-child { padding-top: 0; }
+  .hist-date { font-weight: 600; min-width: 5.5em; }
+  .hist-meals {
+    flex: 1;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+  .tag.cook { background: var(--accent-soft); color: var(--accent-dark); }
+  .tag.out { background: var(--out-soft); color: var(--out); }
+  .tag.conv { background: var(--conv-soft); color: var(--conv); }
+  .tag.empty { background: #f0ebe3; color: var(--muted); }
+  .hist-save {
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .empty-note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .settings-grid label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .settings-grid label span {
+    display: block;
+    margin-bottom: 4px;
+  }
+  .settings-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-danger {
+    color: var(--warn);
+    border-color: #e8c4b0;
+    background: #fff8f5;
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  details.settings > summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  details.settings > summary::-webkit-details-marker { display: none; }
+  details.settings > summary::after {
+    content: "▼";
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  details.settings[open] > summary::after { content: "▲"; }
+  details.settings > summary { margin-bottom: 0; }
+  details.settings[open] > summary { margin-bottom: 12px; }
+
+  .streak-note {
+    margin: 10px 0 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  footer.disclaimer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+    padding: 0 4px;
+  }
+
+  /* Onboarding overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 28, 25, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 40;
+    padding: 16px;
+    padding-bottom: calc(16px + var(--safe-b));
+  }
+  .overlay[hidden] { display: none; }
+  .sheet {
+    background: var(--card);
+    border-radius: 20px 20px 16px 16px;
+    width: min(100%, 440px);
+    padding: 22px 18px 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    max-height: min(90dvh, 640px);
+    overflow: auto;
+  }
+  .sheet h2 {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+  }
+  .sheet .lead {
+    margin: 0 0 16px;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .sheet .settings-grid { margin-bottom: 14px; }
+  .sheet .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sheet .actions .btn { width: 100%; min-width: 0; }
+  .sheet .skip {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  @media (min-width: 480px) {
+    .overlay { align-items: center; }
+    .sheet { border-radius: 20px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <h1>きょうの自炊貯金</h1>
+        <p class="catch">昼と夜を選ぶだけ。浮いたお金が今日・今月・年で見える。</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="pill">端末内のみ</span>
+        <button type="button" class="icon-btn" id="btnOpenSettings" title="設定" aria-label="設定を開く">⚙</button>
+      </div>
+    </div>
+
+    <div class="metrics" aria-live="polite">
+      <div class="metric hero">
+        <div class="label">今日の節約</div>
+        <div class="value"><span id="todaySave">0</span><span class="unit">円</span></div>
+        <div class="hint">外食目安 − 実際の食費（目安）</div>
+      </div>
+      <div class="metric">
+        <div class="label">今月累計</div>
+        <div class="value" style="font-size:1.35rem"><span id="monthSave">0</span><span class="unit">円</span></div>
+      </div>
+      <div class="metric">
+        <div class="label">年換算</div>
+        <div class="value" style="font-size:1.35rem"><span id="yearSave">0</span><span class="unit">円</span></div>
+      </div>
+      <div class="metric" style="grid-column:1/-1">
+        <div class="label">自炊連続日</div>
+        <div class="value" style="font-size:1.45rem"><span id="streak">0</span><span class="unit">日</span></div>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>
+        今日の記録
+        <span class="date-chip" id="todayLabel"></span>
+      </h2>
+      <div class="meal">
+        <h3>昼</h3>
+        <div class="taps" data-slot="lunch">
+          <button type="button" data-v="自炊">自炊</button>
+          <button type="button" data-v="外食" class="is-out">外食</button>
+          <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
+        </div>
+        <div class="override">
+          <label for="lunchOverride">金額上書き（任意・円）</label>
+          <input type="number" id="lunchOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
+        </div>
+      </div>
+      <div class="meal">
+        <h3>夜</h3>
+        <div class="taps" data-slot="dinner">
+          <button type="button" data-v="自炊">自炊</button>
+          <button type="button" data-v="外食" class="is-out">外食</button>
+          <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
+        </div>
+        <div class="override">
+          <label for="dinnerOverride">金額上書き（任意・円）</label>
+          <input type="number" id="dinnerOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
+        </div>
+      </div>
+      <p class="streak-note">連続＝昼も夜も「自炊」の日が途切れず続く日数。欠日・片方未タップでリセット。</p>
+    </section>
+
+    <section class="card">
+      <h2>最近の記録</h2>
+      <ul class="history-list" id="historyList"></ul>
+      <p class="empty-note" id="historyEmpty" hidden>まだ記録がありません。昼と夜をタップしてみましょう。</p>
+    </section>
+
+    <section class="card">
+      <details class="settings" id="settingsPanel">
+        <summary>設定（目安円）</summary>
+        <div class="settings-grid">
+          <label><span>昼の外食目安</span>
+            <input type="number" id="lunchOut" min="0" step="10" inputmode="numeric" />
+          </label>
+          <label><span>夕の外食目安</span>
+            <input type="number" id="dinnerOut" min="0" step="10" inputmode="numeric" />
+          </label>
+          <label><span>自炊デフォルト</span>
+            <input type="number" id="homeCook" min="0" step="10" inputmode="numeric" />
+          </label>
+          <label><span>コンビニ昼目安</span>
+            <input type="number" id="lunchConv" min="0" step="10" inputmode="numeric" />
+          </label>
+          <label><span>コンビニ夕目安</span>
+            <input type="number" id="dinnerConv" min="0" step="10" inputmode="numeric" />
+          </label>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="btn" id="btnSeed">サンプル数日</button>
+          <button type="button" class="btn btn-danger" id="btnClear">ログをクリア</button>
+        </div>
+      </details>
+    </section>
+
+    <footer class="disclaimer">
+      データはこの端末のブラウザ内（localStorage）のみに保存されます。サーバー送信・アカウント・分析はありません。<br />
+      節約額・年換算は目安であり、実際の家計や健康を保証するものではありません。<br />
+      きょうの自炊貯金 · 検証用ダッシュボード
+    </footer>
+  </div>
+
+  <div class="overlay" id="onboarding" hidden>
+    <div class="sheet" role="dialog" aria-labelledby="obTitle" aria-modal="true">
+      <h2 id="obTitle">はじめに：目安円を設定</h2>
+      <p class="lead">自分の「いつもなら外食する金額」を入れると、節約が見えやすくなります。あとから変更できます。</p>
+      <div class="settings-grid">
+        <label><span>昼の外食目安</span>
+          <input type="number" id="obLunchOut" min="0" step="10" inputmode="numeric" />
+        </label>
+        <label><span>夕の外食目安</span>
+          <input type="number" id="obDinnerOut" min="0" step="10" inputmode="numeric" />
+        </label>
+        <label><span>自炊デフォルト</span>
+          <input type="number" id="obHomeCook" min="0" step="10" inputmode="numeric" />
+        </label>
+        <label><span>コンビニ昼目安</span>
+          <input type="number" id="obLunchConv" min="0" step="10" inputmode="numeric" />
+        </label>
+        <label><span>コンビニ夕目安</span>
+          <input type="number" id="obDinnerConv" min="0" step="10" inputmode="numeric" />
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="obSave">この設定ではじめる</button>
+        <button type="button" class="skip" id="obSkip">デフォルトのままはじめる</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const KEY = "cooking_savings_mvp_v1";
+  const defaults = {
+    settings: {
+      lunchOut: 800,
+      dinnerOut: 1200,
+      homeCook: 300,
+      lunchConv: 600,
+      dinnerConv: 700
+    },
+    logs: {},
+    onboardingDone: false
+  };
+
+  function todayStr() {
+    const d = new Date();
+    return (
+      d.getFullYear() +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0")
+    );
+  }
+
+  function formatYen(n) {
+    return String(Math.floor(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return structuredClone(defaults);
+      const data = JSON.parse(raw);
+      return {
+        settings: Object.assign({}, defaults.settings, data.settings || {}),
+        logs: data.logs || {},
+        onboardingDone: !!data.onboardingDone
+      };
+    } catch (e) {
+      return structuredClone(defaults);
+    }
+  }
+
+  function save(state) {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  let state = load();
+
+  const els = {
+    lunchOut: document.getElementById("lunchOut"),
+    dinnerOut: document.getElementById("dinnerOut"),
+    homeCook: document.getElementById("homeCook"),
+    lunchConv: document.getElementById("lunchConv"),
+    dinnerConv: document.getElementById("dinnerConv"),
+    lunchOverride: document.getElementById("lunchOverride"),
+    dinnerOverride: document.getElementById("dinnerOverride"),
+    todayLabel: document.getElementById("todayLabel"),
+    todaySave: document.getElementById("todaySave"),
+    monthSave: document.getElementById("monthSave"),
+    yearSave: document.getElementById("yearSave"),
+    streak: document.getElementById("streak"),
+    historyList: document.getElementById("historyList"),
+    historyEmpty: document.getElementById("historyEmpty"),
+    onboarding: document.getElementById("onboarding"),
+    settingsPanel: document.getElementById("settingsPanel"),
+    obLunchOut: document.getElementById("obLunchOut"),
+    obDinnerOut: document.getElementById("obDinnerOut"),
+    obHomeCook: document.getElementById("obHomeCook"),
+    obLunchConv: document.getElementById("obLunchConv"),
+    obDinnerConv: document.getElementById("obDinnerConv")
+  };
+
+  function ensureToday() {
+    const t = todayStr();
+    if (!state.logs[t]) {
+      state.logs[t] = {
+        lunch: null,
+        dinner: null,
+        lunchOverride: null,
+        dinnerOverride: null
+      };
+    }
+    return state.logs[t];
+  }
+
+  function effectiveYen(slot, choice, override) {
+    const s = state.settings;
+    if (override != null && override !== "" && !Number.isNaN(Number(override))) {
+      return Number(override);
+    }
+    if (!choice) return null;
+    if (choice === "自炊") return s.homeCook;
+    if (choice === "外食") return slot === "lunch" ? s.lunchOut : s.dinnerOut;
+    if (choice === "コンビニ") return slot === "lunch" ? s.lunchConv : s.dinnerConv;
+    return null;
+  }
+
+  function mealSave(slot, choice, override) {
+    if (!choice) return 0;
+    const s = state.settings;
+    const baseline = slot === "lunch" ? s.lunchOut : s.dinnerOut;
+    const eff = effectiveYen(slot, choice, override);
+    if (eff == null) return 0;
+    return Math.max(0, baseline - eff);
+  }
+
+  function daySave(entry) {
+    if (!entry) return 0;
+    return (
+      mealSave("lunch", entry.lunch, entry.lunchOverride) +
+      mealSave("dinner", entry.dinner, entry.dinnerOverride)
+    );
+  }
+
+  function isBothCook(entry) {
+    return entry && entry.lunch === "自炊" && entry.dinner === "自炊";
+  }
+
+  function monthTotal() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    let sum = 0;
+    Object.keys(state.logs).forEach(function (k) {
+      const d = new Date(k + "T12:00:00");
+      if (d.getFullYear() === y && d.getMonth() === m) {
+        sum += daySave(state.logs[k]);
+      }
+    });
+    return sum;
+  }
+
+  function annualized(monthSum) {
+    const day = new Date().getDate();
+    if (day <= 0) return 0;
+    return Math.floor((monthSum / day) * 365);
+  }
+
+  function cookStreak() {
+    let streak = 0;
+    const d = new Date();
+    for (let i = 0; i < 400; i++) {
+      const key =
+        d.getFullYear() +
+        "-" +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(d.getDate()).padStart(2, "0");
+      const entry = state.logs[key];
+      if (!entry || !isBothCook(entry)) break;
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function tagClass(choice) {
+    if (choice === "自炊") return "cook";
+    if (choice === "外食") return "out";
+    if (choice === "コンビニ") return "conv";
+    return "empty";
+  }
+
+  function shortDate(iso) {
+    const parts = iso.split("-");
+    return Number(parts[1]) + "/" + Number(parts[2]);
+  }
+
+  function renderHistory() {
+    const keys = Object.keys(state.logs)
+      .filter(function (k) {
+        const e = state.logs[k];
+        return e && (e.lunch || e.dinner);
+      })
+      .sort()
+      .reverse()
+      .slice(0, 14);
+
+    els.historyList.innerHTML = "";
+    if (keys.length === 0) {
+      els.historyEmpty.hidden = false;
+      return;
+    }
+    els.historyEmpty.hidden = true;
+    keys.forEach(function (k) {
+      const e = state.logs[k];
+      const li = document.createElement("li");
+      const lunchLabel = e.lunch || "未記録";
+      const dinnerLabel = e.dinner || "未記録";
+      li.innerHTML =
+        '<span class="hist-date">' +
+        shortDate(k) +
+        '</span><span class="hist-meals">' +
+        '<span class="tag ' +
+        tagClass(e.lunch) +
+        '">昼 ' +
+        lunchLabel +
+        '</span><span class="tag ' +
+        tagClass(e.dinner) +
+        '">夜 ' +
+        dinnerLabel +
+        '</span></span><span class="hist-save">+' +
+        formatYen(daySave(e)) +
+        "円</span>";
+      els.historyList.appendChild(li);
+    });
+  }
+
+  function syncSettingsInputs() {
+    const s = state.settings;
+    els.lunchOut.value = s.lunchOut;
+    els.dinnerOut.value = s.dinnerOut;
+    els.homeCook.value = s.homeCook;
+    els.lunchConv.value = s.lunchConv;
+    els.dinnerConv.value = s.dinnerConv;
+  }
+
+  function syncTodayUI() {
+    const t = todayStr();
+    els.todayLabel.textContent = t;
+    const entry = ensureToday();
+    document.querySelectorAll(".taps").forEach(function (group) {
+      const slot = group.getAttribute("data-slot");
+      const val = entry[slot];
+      group.querySelectorAll("button").forEach(function (btn) {
+        const on = btn.getAttribute("data-v") === val;
+        btn.classList.toggle("on", on);
+        btn.classList.toggle("conv", on && btn.classList.contains("is-conv"));
+        btn.classList.toggle("out", on && btn.classList.contains("is-out"));
+      });
+    });
+    els.lunchOverride.value =
+      entry.lunchOverride != null && entry.lunchOverride !== ""
+        ? entry.lunchOverride
+        : "";
+    els.dinnerOverride.value =
+      entry.dinnerOverride != null && entry.dinnerOverride !== ""
+        ? entry.dinnerOverride
+        : "";
+  }
+
+  function renderMetrics() {
+    const entry = ensureToday();
+    els.todaySave.textContent = formatYen(daySave(entry));
+    const month = monthTotal();
+    els.monthSave.textContent = formatYen(month);
+    els.yearSave.textContent = formatYen(annualized(month));
+    els.streak.textContent = String(cookStreak());
+  }
+
+  function persistAndRefresh() {
+    save(state);
+    syncTodayUI();
+    renderMetrics();
+    renderHistory();
+  }
+
+  document.querySelectorAll(".taps").forEach(function (group) {
+    group.addEventListener("click", function (e) {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const slot = group.getAttribute("data-slot");
+      const entry = ensureToday();
+      const v = btn.getAttribute("data-v");
+      entry[slot] = entry[slot] === v ? null : v;
+      persistAndRefresh();
+    });
+  });
+
+  ["lunchOut", "dinnerOut", "homeCook", "lunchConv", "dinnerConv"].forEach(
+    function (id) {
+      els[id].addEventListener("change", function () {
+        state.settings[id] = Number(els[id].value) || 0;
+        persistAndRefresh();
+      });
+    }
+  );
+
+  function bindOverride(inputEl, key) {
+    inputEl.addEventListener("change", function () {
+      const entry = ensureToday();
+      const v = inputEl.value.trim();
+      entry[key] = v === "" ? null : Number(v);
+      persistAndRefresh();
+    });
+  }
+  bindOverride(els.lunchOverride, "lunchOverride");
+  bindOverride(els.dinnerOverride, "dinnerOverride");
+
+  document.getElementById("btnClear").addEventListener("click", function () {
+    if (!confirm("ログをすべて削除しますか？（設定は残ります）")) return;
+    state.logs = {};
+    persistAndRefresh();
+  });
+
+  document.getElementById("btnSeed").addEventListener("click", function () {
+    const base = new Date();
+    const samples = [
+      { offset: -6, lunch: "自炊", dinner: "自炊" },
+      { offset: -5, lunch: "自炊", dinner: "コンビニ" },
+      { offset: -4, lunch: "外食", dinner: "自炊" },
+      { offset: -3, lunch: "コンビニ", dinner: "外食" },
+      { offset: -2, lunch: "自炊", dinner: "自炊" },
+      { offset: -1, lunch: "自炊", dinner: "自炊", lunchOverride: 250 }
+    ];
+    samples.forEach(function (s) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + s.offset);
+      const key =
+        d.getFullYear() +
+        "-" +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(d.getDate()).padStart(2, "0");
+      state.logs[key] = {
+        lunch: s.lunch,
+        dinner: s.dinner,
+        lunchOverride: s.lunchOverride != null ? s.lunchOverride : null,
+        dinnerOverride: s.dinnerOverride != null ? s.dinnerOverride : null
+      };
+    });
+    persistAndRefresh();
+  });
+
+  document.getElementById("btnOpenSettings").addEventListener("click", function () {
+    els.settingsPanel.open = true;
+    els.settingsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  function fillOnboarding() {
+    const s = state.settings;
+    els.obLunchOut.value = s.lunchOut;
+    els.obDinnerOut.value = s.dinnerOut;
+    els.obHomeCook.value = s.homeCook;
+    els.obLunchConv.value = s.lunchConv;
+    els.obDinnerConv.value = s.dinnerConv;
+  }
+
+  function finishOnboarding(useInputs) {
+    if (useInputs) {
+      state.settings.lunchOut = Number(els.obLunchOut.value) || 0;
+      state.settings.dinnerOut = Number(els.obDinnerOut.value) || 0;
+      state.settings.homeCook = Number(els.obHomeCook.value) || 0;
+      state.settings.lunchConv = Number(els.obLunchConv.value) || 0;
+      state.settings.dinnerConv = Number(els.obDinnerConv.value) || 0;
+    }
+    state.onboardingDone = true;
+    els.onboarding.hidden = true;
+    syncSettingsInputs();
+    persistAndRefresh();
+  }
+
+  document.getElementById("obSave").addEventListener("click", function () {
+    finishOnboarding(true);
+  });
+  document.getElementById("obSkip").addEventListener("click", function () {
+    finishOnboarding(false);
+  });
+
+  syncSettingsInputs();
+  persistAndRefresh();
+
+  if (!state.onboardingDone) {
+    fillOnboarding();
+    els.onboarding.hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>きょうの自炊貯金 — 昼と夜を選ぶだけ</title>
+  <meta name="description" content="昼と夜を選ぶだけ。浮いたお金が今日・今月・年で見える。自炊・外食・コンビニの節約を見える化するWebダッシュボード。" />
+  <style>
+    :root {
+      --bg: #f7faf7;
+      --card: #ffffff;
+      --ink: #1a2e1a;
+      --muted: #5a6b5a;
+      --line: #d7e3d7;
+      --accent: #2e7d32;
+      --accent-dark: #1b5e20;
+      --accent-soft: #e8f5e9;
+      --warn: #f57c00;
+      --radius: 14px;
+      --shadow: 0 8px 24px rgba(26, 46, 26, 0.08);
+      --max: 720px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+        "Yu Gothic", YuGothic, Meiryo, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 400px at 50% -80px, #c8e6c9 0%, transparent 70%),
+        var(--bg);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-dark); }
+    .wrap {
+      width: min(100% - 2rem, var(--max));
+      margin: 0 auto;
+    }
+    header.hero {
+      padding: 2.5rem 0 1.5rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.25rem 0.75rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: clamp(1.6rem, 5vw, 2.1rem);
+      line-height: 1.35;
+      margin: 0 0 0.75rem;
+      letter-spacing: 0.02em;
+    }
+    .catch {
+      font-size: clamp(1.05rem, 3.5vw, 1.25rem);
+      font-weight: 700;
+      color: var(--accent-dark);
+      margin: 0 0 0.75rem;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 auto 1.5rem;
+      max-width: 28em;
+      font-size: 0.95rem;
+    }
+    .cta-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 0.9rem 1.4rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 2px solid transparent;
+      transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 6px 16px rgba(46, 125, 50, 0.35);
+    }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-secondary {
+      color: var(--accent-dark);
+      background: var(--card);
+      border-color: var(--line);
+    }
+    .btn-secondary:hover { background: var(--accent-soft); }
+    .link-demo {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .link-demo a { font-weight: 600; }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.35rem 1.25rem;
+      margin: 1rem 0;
+    }
+    section h2 {
+      margin: 0 0 0.85rem;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+    }
+    ul.clean {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    ul.clean li {
+      position: relative;
+      padding: 0.45rem 0 0.45rem 1.4rem;
+      border-bottom: 1px solid #eef3ee;
+    }
+    ul.clean li:last-child { border-bottom: none; }
+    ul.clean li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    table.value {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    table.value th,
+    table.value td {
+      text-align: left;
+      padding: 0.7rem 0.5rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    table.value th {
+      width: 34%;
+      color: var(--accent-dark);
+      font-weight: 700;
+      background: var(--accent-soft);
+    }
+    table.value tr:last-child th,
+    table.value tr:last-child td { border-bottom: none; }
+    .hint {
+      margin: 0.85rem 0 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    ol.steps {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    ol.steps li { margin: 0.4rem 0; }
+
+    .diff p {
+      margin: 0.55rem 0;
+      font-size: 0.95rem;
+    }
+    .diff strong { color: var(--accent-dark); }
+
+    .waitlist-box {
+      background: #fafcfa;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+    .waitlist-box label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .waitlist-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .waitlist-row input {
+      flex: 1 1 180px;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    .waitlist-row button {
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #eee;
+      color: #777;
+      font-weight: 700;
+      cursor: not-allowed;
+      font-size: 0.9rem;
+    }
+    .waitlist-note {
+      margin: 0.6rem 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    #sheet {
+      scroll-margin-top: 1rem;
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #f1f8f1 0%, #fff 40%);
+    }
+    #sheet .placeholder {
+      margin-top: 0.75rem;
+      padding: 0.85rem;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      font-size: 0.85rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    /* https://docs.google.com/spreadsheets/d/1mZlFpAOXcHiIf1Sar2o9yDq8F6yQzbhOo0hjFpr0sYg/edit — replace href="https://docs.google.com/spreadsheets/d/1mZlFpAOXcHiIf1Sar2o9yDq8F6yQzbhOo0hjFpr0sYg/edit" on the primary CTA
+       and this comment block with the real Google Sheets copy URL when ready. */
+
+    .disclaimer {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding: 0.5rem 0 2rem;
+      text-align: center;
+    }
+    footer {
+      text-align: center;
+      padding: 0 0 2.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge">ローカル検証用 · 公開プロダクトではありません</div>
+      <h1>きょうの自炊貯金</h1>
+      <p class="catch">昼と夜を選ぶだけ。浮いたお金が今日・今月・年で見える。</p>
+      <p class="sub">AIなし。家計簿アプリでもない。コンビニは外食と別カテゴリ。</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="app.html">ダッシュボードを開く（無料）</a>
+        <a class="btn btn-secondary" href="https://docs.google.com/spreadsheets/d/1mZlFpAOXcHiIf1Sar2o9yDq8F6yQzbhOo0hjFpr0sYg/edit">スプレッドシート（任意のバックアップ）</a>
+      </div>
+      <p class="link-demo">主に使うのは <a href="app.html">app.html</a> のWebダッシュボード。Sheetは任意のバックアップ用です。</p>
+    </header>
+
+    <section id="who">
+      <h2>こんな人向け</h2>
+      <ul class="clean">
+        <li>自炊したいが、記録が続かない人</li>
+        <li>コンビニ・外食の「なんとなく」を数字で見たい人</li>
+        <li>CookBankのようなレシピ／献立アプリは重いと感じる人</li>
+        <li>フル家計簿はまだ不要、まず「食の節約」だけ見たい人</li>
+      </ul>
+    </section>
+
+    <section id="value">
+      <h2>見えるもの</h2>
+      <table class="value">
+        <tbody>
+          <tr>
+            <th>今日の節約</th>
+            <td>昼・夜の選択から、その日に浮いた金額</td>
+          </tr>
+          <tr>
+            <th>今月の累計</th>
+            <td>月初からの節約合計</td>
+          </tr>
+          <tr>
+            <th>年換算</th>
+            <td>今月ペースを年に伸ばした目安</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="hint">入力は <strong>昼＋夜のタップだけ</strong>（自炊／外食／コンビニ）。金額の手入力は任意。</p>
+    </section>
+
+    <section id="input">
+      <h2>入力の約束</h2>
+      <ol class="steps">
+        <li>昼をタップ → 自炊｜外食｜コンビニ</li>
+        <li>夜をタップ → 自炊｜外食｜コンビニ</li>
+        <li>それだけで節約額が更新される</li>
+      </ol>
+      <p class="hint">初期設定は3つだけ：昼の外食目安円・夕の外食目安円・自炊デフォルト円。</p>
+    </section>
+
+    <section id="diff" class="diff">
+      <h2>ほかとの違い</h2>
+      <p><strong>CookBankとの違い：</strong>献立・レシピ・AI提案はしません。昼夜タップで「節約額」だけを見える化します。</p>
+      <p><strong>家計簿アプリとの違い：</strong>全支出の管理ではなく、昼・夜の食費カテゴリだけで節約を計算します。</p>
+    </section>
+
+    <section id="sheet">
+      <h2>まずはWebダッシュボードで試す</h2>
+      <p>昼夜の選択だけで、今日・今月・年換算の節約が見えるダッシュボードです。データは端末内（localStorage）のみ。公開プロダクトではなく、検証用の下書きです。</p>
+      <a class="btn btn-primary" href="app.html">ダッシュボードを開く（無料）</a>
+      <p class="hint" style="margin-top:1rem">Googleスプレッドシートは<strong>任意のバックアップ</strong>として使えます（必須ではありません）。</p>
+      <a class="btn btn-secondary" href="https://docs.google.com/spreadsheets/d/1mZlFpAOXcHiIf1Sar2o9yDq8F6yQzbhOo0hjFpr0sYg/edit">スプレッドシートを開く（任意）</a>
+      <p class="placeholder">
+        https://docs.google.com/spreadsheets/d/1mZlFpAOXcHiIf1Sar2o9yDq8F6yQzbhOo0hjFpr0sYg/edit — 必要ならコピー用URLを差し替えてください。
+      </p>
+      <p class="hint"><a href="demo.html">demo.html</a> は app.html と同じ内容の別名です。</p>
+    </section>
+
+    <section id="waitlist">
+      <h2>ウェイトリスト（準備中）</h2>
+      <p>興味がある方はメールアドレスをご登録ください。</p>
+      <div class="waitlist-box">
+        <!-- フォームUIプレースホルダ。バックエンド・送信処理は未実装。公開・顧客連絡は行わない。 -->
+        <label for="email-placeholder">メールアドレス</label>
+        <div class="waitlist-row">
+          <input id="email-placeholder" type="email" name="email" placeholder="メールアドレス" disabled autocomplete="off" />
+          <button type="button" disabled>通知を受け取る（準備中）</button>
+        </div>
+        <p class="waitlist-note">※ プレースホルダです。送信処理はありません。</p>
+      </div>
+    </section>
+
+    <p class="disclaimer">
+      本ページおよび同梱のWebダッシュボード／スプレッドシートはローカル検証用の下書きです。
+      公開プロダクトではありません。料金の請求・顧客への連絡・分析スクリプトの埋め込みはありません。
+      節約額・年換算は目安であり、実際の家計を保証するものではありません。
+    </p>
+
+    <footer>
+      きょうの自炊貯金 · 検証用LP
+    </footer>
+  </div>
+</body>
+</html>
