@@ -69,7 +69,7 @@
     color: var(--ink);
     line-height: 1.55;
     min-height: 100dvh;
-    padding: 0 0 calc(28px + var(--safe-b));
+    padding: 0 0 calc(72px + var(--safe-b));
     -webkit-font-smoothing: antialiased;
   }
   .app {
@@ -77,6 +77,118 @@
     margin: 0 auto;
     padding-top: 22px;
   }
+  .screen[hidden] { display: none !important; }
+
+  /* —— Bottom tab bar —— */
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding: 6px 12px calc(6px + var(--safe-b));
+    box-shadow: 0 -4px 24px rgba(15, 28, 26, 0.06);
+  }
+  .tabbar button {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 8px 6px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-radius: 14px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s, background 0.15s, transform 0.08s;
+  }
+  .tabbar button:active { transform: scale(0.97); }
+  .tabbar button .tab-ico {
+    font-size: 1.15rem;
+    line-height: 1;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  .tabbar button.on {
+    color: var(--accent-dark);
+  }
+  .tabbar button.on .tab-ico {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* —— Record screen extras —— */
+  .today-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 6px 12px;
+    margin: 0 0 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .today-chip .yen-val {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .backfill-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin: 4px 0 0;
+    padding: 14px 16px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--line));
+    background: color-mix(in srgb, var(--accent-soft) 45%, var(--card));
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    cursor: pointer;
+    text-align: left;
+    box-shadow: none;
+    transition: background 0.15s, border-color 0.15s, transform 0.08s;
+  }
+  .backfill-link:active { transform: scale(0.98); }
+  .backfill-link .sub {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .backfill-link .chev {
+    flex-shrink: 0;
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .record-top .catch { max-width: 16em; }
+  #screenDash .topbar { margin-bottom: 14px; }
+  #screenRecord .streak-note { display: none; }
+  /* Calendar always expanded feel on dashboard */
+  #screenDash .cal-card details.cal-fold[open] > summary { margin-bottom: 14px; }
 
   /* —— Top bar —— */
   .topbar {
@@ -945,177 +1057,216 @@
 </head>
 <body>
   <div class="app">
-    <div class="topbar">
-      <div class="brand">
-        <h1>きょうの自炊貯金</h1>
-        <p class="catch">昼と夜を選ぶだけ。浮いたお金が今日・今月・年で見える。</p>
+    <!-- ===== 記録 ===== -->
+    <div class="screen" id="screenRecord" data-screen="record">
+      <div class="topbar record-top">
+        <div class="brand">
+          <h1>きょうの自炊貯金</h1>
+          <p class="catch">昼と夜を選ぶだけ。</p>
+        </div>
+        <div class="top-actions">
+          <span class="pill">端末内のみ</span>
+          <button type="button" class="icon-btn" id="btnOpenSettings" title="設定" aria-label="設定を開く">⚙</button>
+        </div>
       </div>
-      <div class="top-actions">
-        <span class="pill">端末内のみ</span>
-        <button type="button" class="icon-btn" id="btnOpenSettings" title="設定" aria-label="設定を開く">⚙</button>
+
+      <div class="today-chip" id="recordTodayChip" aria-live="polite">
+        今日の節約 <span class="yen-val">¥<span id="recordTodaySave">0</span></span>
       </div>
+
+      <section class="card" id="recordCard">
+        <h2>
+          <span id="recordTitle">今日の記録</span>
+          <span class="date-chip" id="todayLabel"></span>
+        </h2>
+        <div class="day-tabs" role="tablist" aria-label="記録する日（ショートカット）">
+          <button type="button" id="tabToday" class="on" role="tab" aria-selected="true">
+            今日
+            <span class="sublabel" id="tabTodaySub"></span>
+          </button>
+          <button type="button" id="tabYesterday" role="tab" aria-selected="false">
+            昨日
+            <span class="sublabel" id="tabYesterdaySub"></span>
+          </button>
+        </div>
+        <div class="edit-bar" id="editBar" hidden>
+          <p class="edit-hint" id="editHint">過去日の記録を編集中。保存は自動です。編集できるのは直近30日です。</p>
+          <button type="button" class="btn-back-today" id="btnBackToday">今日に戻る</button>
+        </div>
+        <div class="meal">
+          <h3>昼</h3>
+          <div class="taps" data-slot="lunch">
+            <button type="button" data-v="自炊">自炊</button>
+            <button type="button" data-v="外食" class="is-out">外食</button>
+            <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
+          </div>
+          <div class="override">
+            <label for="lunchOverride">金額上書き（任意・円）</label>
+            <input type="number" id="lunchOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
+          </div>
+        </div>
+        <div class="meal">
+          <h3>夜</h3>
+          <div class="taps" data-slot="dinner">
+            <button type="button" data-v="自炊">自炊</button>
+            <button type="button" data-v="外食" class="is-out">外食</button>
+            <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
+          </div>
+          <div class="override">
+            <label for="dinnerOverride">金額上書き（任意・円）</label>
+            <input type="number" id="dinnerOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
+          </div>
+        </div>
+        <p class="streak-note">自炊連続＝昼も夜も「自炊」が途切れず続く日数（後から埋めても復元可）。記録連続＝その日のうちに両食を記録した連続日数。</p>
+      </section>
+
+      <button type="button" class="backfill-link" id="btnBackfill">
+        <span>
+          過去を埋める
+          <span class="sub">カレンダーで穴埋め・過去日の編集</span>
+        </span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
     </div>
 
-    <div class="week-line" id="weekLine" aria-live="polite">
-      <div class="emoji" id="weekEmoji" aria-hidden="true">✨</div>
-      <div class="text">
-        <p class="headline" id="weekHeadline">今週の一言を読み込み中…</p>
-        <p class="sub" id="weekSub">今週＝月曜〜日曜</p>
+    <!-- ===== ダッシュボード ===== -->
+    <div class="screen" id="screenDash" data-screen="dash" hidden>
+      <div class="topbar">
+        <div class="brand">
+          <h1>ダッシュボード</h1>
+          <p class="catch">浮いたお金が今日・今月・年で見える。</p>
+        </div>
+        <div class="top-actions">
+          <span class="pill">端末内のみ</span>
+        </div>
       </div>
+
+      <div class="week-line" id="weekLine" aria-live="polite">
+        <div class="emoji" id="weekEmoji" aria-hidden="true">✨</div>
+        <div class="text">
+          <p class="headline" id="weekHeadline">今週の一言を読み込み中…</p>
+          <p class="sub" id="weekSub">今週＝月曜〜日曜</p>
+        </div>
+      </div>
+
+      <div class="metrics" aria-live="polite">
+        <div class="metric hero">
+          <div class="label">今日の節約</div>
+          <div class="value"><span id="todaySave">0</span><span class="unit">円</span></div>
+          <div class="hint">外食目安 − 実際の食費（目安）</div>
+        </div>
+        <div class="metric">
+          <div class="label">今月累計</div>
+          <div class="value"><span id="monthSave">0</span><span class="unit">円</span></div>
+        </div>
+        <div class="metric">
+          <div class="label">年換算</div>
+          <div class="value"><span id="yearSave">0</span><span class="unit">円</span></div>
+        </div>
+        <div class="metric streak-card">
+          <div class="label">自炊連続日</div>
+          <div class="value"><span id="streak">0</span><span class="unit">日</span></div>
+          <span class="streak-badge">昼も夜も自炊</span>
+        </div>
+        <div class="metric streak-card">
+          <div class="label">記録連続日</div>
+          <div class="value"><span id="recordStreak">0</span><span class="unit">日</span></div>
+          <span class="streak-badge">当日に両食記録</span>
+        </div>
+        <p class="streak-hint">記録連続は、今日まで欠けなく「その日のうちに」両食を記録した日数。後から埋めても途中の穴は履歴上埋まるが、習慣の目安として表示。</p>
+        <div class="goal-block" id="goalBlock" hidden>
+          <div class="goal-head">
+            <div class="label">今月の目標ライン</div>
+            <div class="nums"><span id="goalProgressLabel">0 / 0円</span></div>
+          </div>
+          <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="goalBarWrap">
+            <span id="goalBarFill"></span>
+          </div>
+          <p class="goal-foot" id="goalFoot"></p>
+        </div>
+      </div>
+
+      <section class="card cal-card">
+        <details class="cal-fold" id="calFold" open>
+          <summary>
+            <span>
+              過去の記録・穴埋め（カレンダー）
+              <span class="cal-fold-sub">タップで月表示・他の日を編集</span>
+            </span>
+          </summary>
+          <div class="cal-nav">
+            <button type="button" class="icon-btn" id="calPrev" aria-label="前の月">‹</button>
+            <h2 id="calMonthLabel">2026年9月</h2>
+            <button type="button" class="icon-btn" id="calNext" aria-label="次の月">›</button>
+          </div>
+          <div class="cal-weekdays" aria-hidden="true">
+            <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+          </div>
+          <div class="cal-grid" id="calGrid" role="grid" aria-label="記録カレンダー"></div>
+          <div class="cal-legend">
+            <span><i class="none"></i>未入力</span>
+            <span><i class="partial"></i>一部入力</span>
+            <span><i class="full"></i>入力済み</span>
+            <span><i class="cook"></i>両食自炊</span>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <h2>最近の記録</h2>
+        <ul class="history-list" id="historyList"></ul>
+        <p class="empty-note" id="historyEmpty" hidden>まだ記録がありません。昼と夜をタップしてみましょう。</p>
+      </section>
+
+      <section class="card">
+        <details class="settings" id="settingsPanel">
+          <summary>設定（目安円）</summary>
+          <div class="settings-grid">
+            <label><span>昼の外食目安</span>
+              <input type="number" id="lunchOut" min="0" step="10" inputmode="numeric" />
+            </label>
+            <label><span>夕の外食目安</span>
+              <input type="number" id="dinnerOut" min="0" step="10" inputmode="numeric" />
+            </label>
+            <label><span>自炊デフォルト</span>
+              <input type="number" id="homeCook" min="0" step="10" inputmode="numeric" />
+            </label>
+            <label><span>コンビニ昼目安</span>
+              <input type="number" id="lunchConv" min="0" step="10" inputmode="numeric" />
+            </label>
+            <label><span>コンビニ夕目安</span>
+              <input type="number" id="dinnerConv" min="0" step="10" inputmode="numeric" />
+            </label>
+          </div>
+          <div class="settings-grid goal-row">
+            <label><span>今月の節約目標（円・空欄で非表示）</span>
+              <input type="number" id="monthlyGoal" min="0" step="100" inputmode="numeric" placeholder="例：10000" />
+            </label>
+          </div>
+          <div class="settings-actions">
+            <button type="button" class="btn" id="btnSeed">サンプル数日</button>
+            <button type="button" class="btn btn-danger" id="btnClear">ログをクリア</button>
+          </div>
+        </details>
+      </section>
+
+      <footer class="disclaimer">
+        データはこの端末のブラウザ内（localStorage）のみに保存されます。サーバー送信・アカウント・分析はありません。<br />
+        節約額・年換算は目安であり、実際の家計や健康を保証するものではありません。<br />
+        きょうの自炊貯金 · 検証用ダッシュボード
+      </footer>
     </div>
 
-    <div class="metrics" aria-live="polite">
-      <div class="metric hero">
-        <div class="label">今日の節約</div>
-        <div class="value"><span id="todaySave">0</span><span class="unit">円</span></div>
-        <div class="hint">外食目安 − 実際の食費（目安）</div>
-      </div>
-      <div class="metric">
-        <div class="label">今月累計</div>
-        <div class="value"><span id="monthSave">0</span><span class="unit">円</span></div>
-      </div>
-      <div class="metric">
-        <div class="label">年換算</div>
-        <div class="value"><span id="yearSave">0</span><span class="unit">円</span></div>
-      </div>
-      <div class="metric streak-card">
-        <div class="label">自炊連続日</div>
-        <div class="value"><span id="streak">0</span><span class="unit">日</span></div>
-        <span class="streak-badge">昼も夜も自炊</span>
-      </div>
-      <div class="metric streak-card">
-        <div class="label">記録連続日</div>
-        <div class="value"><span id="recordStreak">0</span><span class="unit">日</span></div>
-        <span class="streak-badge">当日に両食記録</span>
-      </div>
-      <p class="streak-hint">記録連続は、今日まで欠けなく「その日のうちに」両食を記録した日数。後から埋めても途中の穴は履歴上埋まるが、習慣の目安として表示。</p>
-      <div class="goal-block" id="goalBlock" hidden>
-        <div class="goal-head">
-          <div class="label">今月の目標ライン</div>
-          <div class="nums"><span id="goalProgressLabel">0 / 0円</span></div>
-        </div>
-        <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="goalBarWrap">
-          <span id="goalBarFill"></span>
-        </div>
-        <p class="goal-foot" id="goalFoot"></p>
-      </div>
-    </div>
-
-    <section class="card" id="recordCard">
-      <h2>
-        <span id="recordTitle">今日の記録</span>
-        <span class="date-chip" id="todayLabel"></span>
-      </h2>
-      <div class="day-tabs" role="tablist" aria-label="記録する日（ショートカット）">
-        <button type="button" id="tabToday" class="on" role="tab" aria-selected="true">
-          今日
-          <span class="sublabel" id="tabTodaySub"></span>
-        </button>
-        <button type="button" id="tabYesterday" role="tab" aria-selected="false">
-          昨日
-          <span class="sublabel" id="tabYesterdaySub"></span>
-        </button>
-      </div>
-      <div class="edit-bar" id="editBar" hidden>
-        <p class="edit-hint" id="editHint">過去日の記録を編集中。保存は自動です。編集できるのは直近30日です。</p>
-        <button type="button" class="btn-back-today" id="btnBackToday">今日に戻る</button>
-      </div>
-      <div class="meal">
-        <h3>昼</h3>
-        <div class="taps" data-slot="lunch">
-          <button type="button" data-v="自炊">自炊</button>
-          <button type="button" data-v="外食" class="is-out">外食</button>
-          <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
-        </div>
-        <div class="override">
-          <label for="lunchOverride">金額上書き（任意・円）</label>
-          <input type="number" id="lunchOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
-        </div>
-      </div>
-      <div class="meal">
-        <h3>夜</h3>
-        <div class="taps" data-slot="dinner">
-          <button type="button" data-v="自炊">自炊</button>
-          <button type="button" data-v="外食" class="is-out">外食</button>
-          <button type="button" data-v="コンビニ" class="is-conv">コンビニ</button>
-        </div>
-        <div class="override">
-          <label for="dinnerOverride">金額上書き（任意・円）</label>
-          <input type="number" id="dinnerOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
-        </div>
-      </div>
-      <p class="streak-note">自炊連続＝昼も夜も「自炊」が途切れず続く日数（後から埋めても復元可）。記録連続＝その日のうちに両食を記録した連続日数。</p>
-    </section>
-
-    <section class="card cal-card">
-      <details class="cal-fold" id="calFold">
-        <summary>
-          <span>
-            過去の記録・穴埋め（カレンダー）
-            <span class="cal-fold-sub">タップで月表示・他の日を編集</span>
-          </span>
-        </summary>
-        <div class="cal-nav">
-          <button type="button" class="icon-btn" id="calPrev" aria-label="前の月">‹</button>
-          <h2 id="calMonthLabel">2026年9月</h2>
-          <button type="button" class="icon-btn" id="calNext" aria-label="次の月">›</button>
-        </div>
-        <div class="cal-weekdays" aria-hidden="true">
-          <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
-        </div>
-        <div class="cal-grid" id="calGrid" role="grid" aria-label="記録カレンダー"></div>
-        <div class="cal-legend">
-          <span><i class="none"></i>未入力</span>
-          <span><i class="partial"></i>一部入力</span>
-          <span><i class="full"></i>入力済み</span>
-          <span><i class="cook"></i>両食自炊</span>
-        </div>
-      </details>
-    </section>
-
-    <section class="card">
-      <h2>最近の記録</h2>
-      <ul class="history-list" id="historyList"></ul>
-      <p class="empty-note" id="historyEmpty" hidden>まだ記録がありません。昼と夜をタップしてみましょう。</p>
-    </section>
-
-    <section class="card">
-      <details class="settings" id="settingsPanel">
-        <summary>設定（目安円）</summary>
-        <div class="settings-grid">
-          <label><span>昼の外食目安</span>
-            <input type="number" id="lunchOut" min="0" step="10" inputmode="numeric" />
-          </label>
-          <label><span>夕の外食目安</span>
-            <input type="number" id="dinnerOut" min="0" step="10" inputmode="numeric" />
-          </label>
-          <label><span>自炊デフォルト</span>
-            <input type="number" id="homeCook" min="0" step="10" inputmode="numeric" />
-          </label>
-          <label><span>コンビニ昼目安</span>
-            <input type="number" id="lunchConv" min="0" step="10" inputmode="numeric" />
-          </label>
-          <label><span>コンビニ夕目安</span>
-            <input type="number" id="dinnerConv" min="0" step="10" inputmode="numeric" />
-          </label>
-        </div>
-        <div class="settings-grid goal-row">
-          <label><span>今月の節約目標（円・空欄で非表示）</span>
-            <input type="number" id="monthlyGoal" min="0" step="100" inputmode="numeric" placeholder="例：10000" />
-          </label>
-        </div>
-        <div class="settings-actions">
-          <button type="button" class="btn" id="btnSeed">サンプル数日</button>
-          <button type="button" class="btn btn-danger" id="btnClear">ログをクリア</button>
-        </div>
-      </details>
-    </section>
-
-    <footer class="disclaimer">
-      データはこの端末のブラウザ内（localStorage）のみに保存されます。サーバー送信・アカウント・分析はありません。<br />
-      節約額・年換算は目安であり、実際の家計や健康を保証するものではありません。<br />
-      きょうの自炊貯金 · 検証用ダッシュボード
-    </footer>
+    <nav class="tabbar" role="tablist" aria-label="メインナビ">
+      <button type="button" id="navRecord" class="on" role="tab" aria-selected="true" aria-controls="screenRecord">
+        <span class="tab-ico" aria-hidden="true">✏️</span>
+        記録
+      </button>
+      <button type="button" id="navDash" role="tab" aria-selected="false" aria-controls="screenDash">
+        <span class="tab-ico" aria-hidden="true">📊</span>
+        ダッシュボード
+      </button>
+    </nav>
   </div>
 
   <div class="overlay" id="onboarding" hidden>
@@ -1278,8 +1429,55 @@
     editHint: document.getElementById("editHint"),
     editBar: document.getElementById("editBar"),
     btnBackToday: document.getElementById("btnBackToday"),
-    calFold: document.getElementById("calFold")
+    calFold: document.getElementById("calFold"),
+    screenRecord: document.getElementById("screenRecord"),
+    screenDash: document.getElementById("screenDash"),
+    navRecord: document.getElementById("navRecord"),
+    navDash: document.getElementById("navDash"),
+    recordTodaySave: document.getElementById("recordTodaySave"),
+    btnBackfill: document.getElementById("btnBackfill")
   };
+
+  let activeScreen = "record";
+
+  function showScreen(name, opts) {
+    opts = opts || {};
+    activeScreen = name === "dash" ? "dash" : "record";
+    const isRecord = activeScreen === "record";
+    els.screenRecord.hidden = !isRecord;
+    els.screenDash.hidden = isRecord;
+    els.navRecord.classList.toggle("on", isRecord);
+    els.navDash.classList.toggle("on", !isRecord);
+    els.navRecord.setAttribute("aria-selected", isRecord ? "true" : "false");
+    els.navDash.setAttribute("aria-selected", isRecord ? "false" : "true");
+    if (!isRecord && opts.openCalendar) {
+      if (els.calFold) els.calFold.open = true;
+    }
+    if (!isRecord && opts.openSettings) {
+      if (els.settingsPanel) els.settingsPanel.open = true;
+      requestAnimationFrame(function () {
+        if (els.settingsPanel) {
+          els.settingsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+    if (!isRecord && opts.scrollCalendar) {
+      requestAnimationFrame(function () {
+        const cal = document.querySelector("#screenDash .cal-card");
+        if (cal) cal.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+    if (isRecord && opts.scrollRecord) {
+      requestAnimationFrame(function () {
+        const rc = document.getElementById("recordCard");
+        if (rc) rc.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+    // Reset scroll when switching tabs unless a scroll target was requested
+    if (!opts.openSettings && !opts.scrollCalendar && !opts.scrollRecord) {
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    }
+  }
 
   function ensureDay(iso) {
     if (!state.logs[iso]) {
@@ -1476,8 +1674,7 @@
         li.title = "この日を編集";
         li.addEventListener("click", function () {
           setEditDate(k);
-          const rc = document.getElementById("recordCard");
-          if (rc) rc.scrollIntoView({ behavior: "smooth", block: "start" });
+          showScreen("record", { scrollRecord: true });
         });
       }
       const lunchLabel = e.lunch || "未記録";
@@ -1697,8 +1894,7 @@
               : "未入力";
         btn.addEventListener("click", function () {
           setEditDate(iso);
-          const rc = document.getElementById("recordCard");
-          if (rc) rc.scrollIntoView({ behavior: "smooth", block: "start" });
+          showScreen("record", { scrollRecord: true });
         });
       }
 
@@ -1727,7 +1923,9 @@
       lunch: null,
       dinner: null
     };
-    els.todaySave.textContent = formatYen(daySave(todayEntry));
+    const todayYen = daySave(todayEntry);
+    els.todaySave.textContent = formatYen(todayYen);
+    if (els.recordTodaySave) els.recordTodaySave.textContent = formatYen(todayYen);
     const month = monthTotal();
     els.monthSave.textContent = formatYen(month);
     els.yearSave.textContent = formatYen(annualized(month));
@@ -1850,8 +2048,17 @@
   });
 
   document.getElementById("btnOpenSettings").addEventListener("click", function () {
-    els.settingsPanel.open = true;
-    els.settingsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    showScreen("dash", { openSettings: true });
+  });
+
+  els.navRecord.addEventListener("click", function () {
+    showScreen("record");
+  });
+  els.navDash.addEventListener("click", function () {
+    showScreen("dash");
+  });
+  els.btnBackfill.addEventListener("click", function () {
+    showScreen("dash", { openCalendar: true, scrollCalendar: true });
   });
 
   function fillOnboarding() {
@@ -1885,6 +2092,7 @@
   });
 
   syncSettingsInputs();
+  showScreen("record");
   persistAndRefresh();
 
   if (!state.onboardingDone) {
