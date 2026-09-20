@@ -254,22 +254,185 @@
     font-weight: 500;
   }
   .metric.streak-card {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px;
+    padding: 14px 15px 12px;
   }
   .metric.streak-card .value { font-size: 1.35rem; }
   .streak-badge {
-    font-size: 0.68rem;
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.65rem;
     font-weight: 700;
     color: var(--accent-dark);
     background: var(--accent-soft);
     border-radius: 999px;
-    padding: 5px 10px;
+    padding: 4px 9px;
     white-space: nowrap;
+  }
+  .streak-hint {
+    grid-column: 1 / -1;
+    margin: -4px 0 0;
+    font-size: 0.68rem;
+    color: var(--muted);
+    line-height: 1.5;
+    font-weight: 500;
+    padding: 0 2px;
+  }
+
+  /* —— Calendar —— */
+  .cal-card { margin-bottom: 12px; }
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .cal-nav h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    flex: 1;
+    text-align: center;
+  }
+  .cal-nav .icon-btn {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+  .cal-nav .icon-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .cal-weekdays span {
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 2px 0;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    position: relative;
+    min-height: 42px;
+  }
+  .cal-cell:active:not(:disabled) { transform: scale(0.94); }
+  .cal-cell .num {
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .cal-cell .dots {
+    display: flex;
+    gap: 3px;
+    height: 6px;
+    align-items: center;
+  }
+  .cal-cell .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line);
+  }
+  .cal-cell.empty {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .cal-cell.muted .num { color: var(--muted); opacity: 0.45; }
+  .cal-cell.muted { cursor: default; }
+  .cal-cell.outside { opacity: 0.35; }
+  .cal-cell.none {
+    background: var(--line-soft);
+  }
+  .cal-cell.partial {
+    background: color-mix(in srgb, var(--accent-soft) 55%, var(--card));
+    border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  }
+  .cal-cell.partial .dot.on { background: var(--accent); }
+  .cal-cell.full {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .cal-cell.full .dot { background: var(--accent); }
+  .cal-cell.cook-both::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-mid);
+    opacity: 0.85;
+  }
+  .cal-cell.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .cal-cell.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .cal-cell.selected .num { color: #fff; }
+  .cal-cell.selected .dot { background: rgba(255,255,255,0.85); }
+  .cal-cell.selected.cook-both::after { background: #fff; }
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .cal-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cal-legend i {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+  .cal-legend i.none { background: var(--line-soft); }
+  .cal-legend i.partial { background: color-mix(in srgb, var(--accent-soft) 55%, var(--card)); border-color: color-mix(in srgb, var(--accent) 22%, var(--line)); }
+  .cal-legend i.full { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .cal-legend i.cook {
+    background: transparent;
+    border: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-mid);
   }
 
   /* —— Goal —— */
@@ -731,12 +894,16 @@
         <div class="value"><span id="yearSave">0</span><span class="unit">円</span></div>
       </div>
       <div class="metric streak-card">
-        <div>
-          <div class="label">自炊連続日</div>
-          <div class="value"><span id="streak">0</span><span class="unit">日</span></div>
-        </div>
+        <div class="label">自炊連続日</div>
+        <div class="value"><span id="streak">0</span><span class="unit">日</span></div>
         <span class="streak-badge">昼も夜も自炊</span>
       </div>
+      <div class="metric streak-card">
+        <div class="label">記録連続日</div>
+        <div class="value"><span id="recordStreak">0</span><span class="unit">日</span></div>
+        <span class="streak-badge">当日に両食記録</span>
+      </div>
+      <p class="streak-hint">記録連続は、今日まで欠けなく「その日のうちに」両食を記録した日数。後から埋めても途中の穴は履歴上埋まるが、習慣の目安として表示。</p>
       <div class="goal-block" id="goalBlock" hidden>
         <div class="goal-head">
           <div class="label">今月の目標ライン</div>
@@ -749,12 +916,30 @@
       </div>
     </div>
 
-    <section class="card">
+    <section class="card cal-card">
+      <div class="cal-nav">
+        <button type="button" class="icon-btn" id="calPrev" aria-label="前の月">‹</button>
+        <h2 id="calMonthLabel">2026年9月</h2>
+        <button type="button" class="icon-btn" id="calNext" aria-label="次の月">›</button>
+      </div>
+      <div class="cal-weekdays" aria-hidden="true">
+        <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+      </div>
+      <div class="cal-grid" id="calGrid" role="grid" aria-label="記録カレンダー"></div>
+      <div class="cal-legend">
+        <span><i class="none"></i>未入力</span>
+        <span><i class="partial"></i>一部入力</span>
+        <span><i class="full"></i>入力済み</span>
+        <span><i class="cook"></i>両食自炊</span>
+      </div>
+    </section>
+
+    <section class="card" id="recordCard">
       <h2>
         <span id="recordTitle">今日の記録</span>
         <span class="date-chip" id="todayLabel"></span>
       </h2>
-      <div class="day-tabs" role="tablist" aria-label="記録する日">
+      <div class="day-tabs" role="tablist" aria-label="記録する日（ショートカット）">
         <button type="button" id="tabToday" class="on" role="tab" aria-selected="true">
           今日
           <span class="sublabel" id="tabTodaySub"></span>
@@ -764,7 +949,7 @@
           <span class="sublabel" id="tabYesterdaySub"></span>
         </button>
       </div>
-      <p class="edit-hint" id="yesterdayHint" hidden>昨日の昼・夜が未記録・間違いならここで直せます。保存は自動です。</p>
+      <p class="edit-hint" id="editHint" hidden>過去日の記録を編集中。保存は自動です。編集できるのは直近30日です。</p>
       <div class="meal">
         <h3>昼</h3>
         <div class="taps" data-slot="lunch">
@@ -789,7 +974,7 @@
           <input type="number" id="dinnerOverride" min="0" step="10" inputmode="numeric" placeholder="空＝目安を使用" />
         </div>
       </div>
-      <p class="streak-note">連続＝昼も夜も「自炊」の日が途切れず続く日数。欠日・片方未タップでリセット。</p>
+      <p class="streak-note">自炊連続＝昼も夜も「自炊」が途切れず続く日数（後から埋めても復元可）。記録連続＝その日のうちに両食を記録した連続日数。</p>
     </section>
 
     <section class="card">
@@ -943,9 +1128,15 @@
     localStorage.setItem(KEY, JSON.stringify(state));
   }
 
+  const EDIT_LOOKBACK_DAYS = 30;
+  const CAL_LOOKBACK_DAYS = 60;
+
   let state = load();
-  /** Which day the meal form edits: today or yesterday ISO. */
+  /** Which calendar day the meal form edits (ISO). */
   let editDate = todayStr();
+  /** First day of the month currently shown in the calendar. */
+  let calView = new Date();
+  calView = new Date(calView.getFullYear(), calView.getMonth(), 1);
 
   const els = {
     lunchOut: document.getElementById("lunchOut"),
@@ -962,6 +1153,11 @@
     monthSave: document.getElementById("monthSave"),
     yearSave: document.getElementById("yearSave"),
     streak: document.getElementById("streak"),
+    recordStreak: document.getElementById("recordStreak"),
+    calGrid: document.getElementById("calGrid"),
+    calMonthLabel: document.getElementById("calMonthLabel"),
+    calPrev: document.getElementById("calPrev"),
+    calNext: document.getElementById("calNext"),
     historyList: document.getElementById("historyList"),
     historyEmpty: document.getElementById("historyEmpty"),
     onboarding: document.getElementById("onboarding"),
@@ -983,7 +1179,7 @@
     tabYesterday: document.getElementById("tabYesterday"),
     tabTodaySub: document.getElementById("tabTodaySub"),
     tabYesterdaySub: document.getElementById("tabYesterdaySub"),
-    yesterdayHint: document.getElementById("yesterdayHint")
+    editHint: document.getElementById("editHint")
   };
 
   function ensureDay(iso) {
@@ -1029,6 +1225,50 @@
 
   function isBothCook(entry) {
     return entry && entry.lunch === "自炊" && entry.dinner === "自炊";
+  }
+
+  function isFullyLogged(entry) {
+    return !!(entry && entry.lunch && entry.dinner);
+  }
+
+  function daysAgoISO(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return toISODate(d);
+  }
+
+  function minEditableISO() {
+    return daysAgoISO(EDIT_LOOKBACK_DAYS);
+  }
+
+  function minVisibleISO() {
+    return daysAgoISO(CAL_LOOKBACK_DAYS);
+  }
+
+  function isEditableISO(iso) {
+    const t = todayStr();
+    return iso <= t && iso >= minEditableISO();
+  }
+
+  function dayStatus(entry) {
+    if (!entry) return "none";
+    const hasL = !!entry.lunch;
+    const hasD = !!entry.dinner;
+    if (hasL && hasD) return "full";
+    if (hasL || hasD) return "partial";
+    return "none";
+  }
+
+  /** When both meals become set, stamp completeSource once. Clears if incomplete. */
+  function syncCompleteSource(iso, entry) {
+    if (!isFullyLogged(entry)) {
+      if (entry.completeSource) delete entry.completeSource;
+      return;
+    }
+    if (entry.completeSource === "sameDay" || entry.completeSource === "backfill") {
+      return; // keep first classification
+    }
+    entry.completeSource = iso === todayStr() ? "sameDay" : "backfill";
   }
 
   function monthTotal() {
@@ -1092,6 +1332,20 @@
     return streak;
   }
 
+  /** Consecutive fully-logged same-day completions ending today. Backfill does not count. */
+  function recordStreak() {
+    let streak = 0;
+    const d = new Date();
+    for (let i = 0; i < 400; i++) {
+      const key = toISODate(d);
+      const entry = state.logs[key];
+      if (!entry || !isFullyLogged(entry) || entry.completeSource !== "sameDay") break;
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
   function tagClass(choice) {
     if (choice === "自炊") return "cook";
     if (choice === "外食") return "out";
@@ -1118,8 +1372,23 @@
     keys.forEach(function (k) {
       const e = state.logs[k];
       const li = document.createElement("li");
+      if (isEditableISO(k)) {
+        li.style.cursor = "pointer";
+        li.title = "この日を編集";
+        li.addEventListener("click", function () {
+          setEditDate(k);
+          const rc = document.getElementById("recordCard");
+          if (rc) rc.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
       const lunchLabel = e.lunch || "未記録";
       const dinnerLabel = e.dinner || "未記録";
+      const src =
+        e.completeSource === "backfill"
+          ? ' <span class="tag empty">後入れ</span>'
+          : e.completeSource === "sameDay"
+            ? ""
+            : "";
       li.innerHTML =
         '<span class="hist-date">' +
         shortDate(k) +
@@ -1132,7 +1401,9 @@
         tagClass(e.dinner) +
         '">夜 ' +
         dinnerLabel +
-        '</span></span><span class="hist-save">+' +
+        "</span>" +
+        src +
+        '</span><span class="hist-save">+' +
         formatYen(daySave(e)) +
         "円</span>";
       els.historyList.appendChild(li);
@@ -1156,18 +1427,38 @@
     els.tabTodaySub.textContent = shortDate(t);
     els.tabYesterdaySub.textContent = shortDate(y);
     const isToday = editDate === t;
+    const isYest = editDate === y;
     els.tabToday.classList.toggle("on", isToday);
-    els.tabYesterday.classList.toggle("on", !isToday);
+    els.tabYesterday.classList.toggle("on", isYest);
     els.tabToday.setAttribute("aria-selected", isToday ? "true" : "false");
-    els.tabYesterday.setAttribute("aria-selected", isToday ? "false" : "true");
-    els.recordTitle.textContent = isToday ? "今日の記録" : "昨日の記録";
-    els.yesterdayHint.hidden = isToday;
+    els.tabYesterday.setAttribute("aria-selected", isYest ? "true" : "false");
+    if (isToday) {
+      els.recordTitle.textContent = "今日の記録";
+      els.editHint.hidden = true;
+    } else if (isYest) {
+      els.recordTitle.textContent = "昨日の記録";
+      els.editHint.hidden = false;
+      els.editHint.textContent =
+        "昨日の昼・夜が未記録・間違いならここで直せます。保存は自動です。";
+    } else {
+      els.recordTitle.textContent = shortDate(editDate) + "の記録";
+      els.editHint.hidden = false;
+      els.editHint.textContent =
+        "過去日の記録を編集中。保存は自動です。編集できるのは直近" +
+        EDIT_LOOKBACK_DAYS +
+        "日です。";
+    }
   }
 
   function syncEditUI() {
     syncDayTabs();
     els.todayLabel.textContent = editDate;
-    const entry = ensureDay(editDate);
+    const entry = state.logs[editDate] || {
+      lunch: null,
+      dinner: null,
+      lunchOverride: null,
+      dinnerOverride: null
+    };
     document.querySelectorAll(".taps").forEach(function (group) {
       const slot = group.getAttribute("data-slot");
       const val = entry[slot];
@@ -1235,13 +1526,112 @@
     }
   }
 
+  function clampCalView() {
+    const today = new Date();
+    const maxMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - CAL_LOOKBACK_DAYS);
+    const minMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    if (calView > maxMonth) calView = maxMonth;
+    if (calView < minMonth) calView = minMonth;
+  }
+
+  function renderCalendar() {
+    clampCalView();
+    const y = calView.getFullYear();
+    const m = calView.getMonth();
+    els.calMonthLabel.textContent = y + "年" + (m + 1) + "月";
+
+    const today = todayStr();
+    const minEdit = minEditableISO();
+    const minVis = minVisibleISO();
+
+    const firstDow = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    const todayD = new Date();
+    const maxMonth = new Date(todayD.getFullYear(), todayD.getMonth(), 1);
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - CAL_LOOKBACK_DAYS);
+    const minMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    els.calPrev.disabled = calView <= minMonth;
+    els.calNext.disabled = calView >= maxMonth;
+
+    els.calGrid.innerHTML = "";
+    for (let i = 0; i < firstDow; i++) {
+      const filler = document.createElement("button");
+      filler.type = "button";
+      filler.className = "cal-cell empty";
+      filler.tabIndex = -1;
+      filler.setAttribute("aria-hidden", "true");
+      els.calGrid.appendChild(filler);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = y + "-" + pad2(m + 1) + "-" + pad2(day);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cal-cell";
+      const entry = state.logs[iso];
+      const status = dayStatus(entry);
+      btn.classList.add(status);
+      if (iso === today) btn.classList.add("today");
+      if (iso === editDate) btn.classList.add("selected");
+      if (isBothCook(entry)) btn.classList.add("cook-both");
+
+      const future = iso > today;
+      const tooOld = iso < minVis;
+      const notEditable = !isEditableISO(iso);
+
+      if (future || tooOld) {
+        btn.classList.add("muted", "outside");
+        btn.disabled = true;
+      } else if (notEditable) {
+        btn.classList.add("muted");
+        btn.disabled = true;
+        btn.title = "編集できるのは直近" + EDIT_LOOKBACK_DAYS + "日です";
+      } else {
+        btn.title =
+          status === "full"
+            ? "入力済み"
+            : status === "partial"
+              ? "一部入力"
+              : "未入力";
+        btn.addEventListener("click", function () {
+          setEditDate(iso);
+        });
+      }
+
+      const num = document.createElement("span");
+      num.className = "num";
+      num.textContent = String(day);
+      btn.appendChild(num);
+
+      const dots = document.createElement("span");
+      dots.className = "dots";
+      const d1 = document.createElement("span");
+      d1.className = "dot" + (entry && entry.lunch ? " on" : "");
+      const d2 = document.createElement("span");
+      d2.className = "dot" + (entry && entry.dinner ? " on" : "");
+      dots.appendChild(d1);
+      dots.appendChild(d2);
+      btn.appendChild(dots);
+
+      btn.setAttribute("aria-label", iso + " " + (btn.title || ""));
+      els.calGrid.appendChild(btn);
+    }
+  }
+
   function renderMetrics() {
-    const todayEntry = ensureDay(todayStr());
+    const todayEntry = state.logs[todayStr()] || {
+      lunch: null,
+      dinner: null
+    };
     els.todaySave.textContent = formatYen(daySave(todayEntry));
     const month = monthTotal();
     els.monthSave.textContent = formatYen(month);
     els.yearSave.textContent = formatYen(annualized(month));
     els.streak.textContent = String(cookStreak());
+    els.recordStreak.textContent = String(recordStreak());
     renderWeekLine();
     renderGoal(month);
   }
@@ -1250,17 +1640,29 @@
     save(state);
     syncEditUI();
     renderMetrics();
+    renderCalendar();
     renderHistory();
   }
 
   function setEditDate(iso) {
+    if (!isEditableISO(iso)) {
+      iso = todayStr();
+    }
     editDate = iso;
-    // Keep today/yesterday only — clamp if clock crossed midnight mid-session.
-    const t = todayStr();
-    const y = yesterdayStr();
-    if (editDate !== t && editDate !== y) editDate = t;
+    // Keep calendar view on the edited month when possible.
+    const parts = iso.split("-");
+    calView = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
     persistAndRefresh();
   }
+
+  els.calPrev.addEventListener("click", function () {
+    calView = new Date(calView.getFullYear(), calView.getMonth() - 1, 1);
+    renderCalendar();
+  });
+  els.calNext.addEventListener("click", function () {
+    calView = new Date(calView.getFullYear(), calView.getMonth() + 1, 1);
+    renderCalendar();
+  });
 
   els.tabToday.addEventListener("click", function () {
     setEditDate(todayStr());
@@ -1273,10 +1675,12 @@
     group.addEventListener("click", function (e) {
       const btn = e.target.closest("button");
       if (!btn) return;
+      if (!isEditableISO(editDate)) return;
       const slot = group.getAttribute("data-slot");
       const entry = ensureDay(editDate);
       const v = btn.getAttribute("data-v");
       entry[slot] = entry[slot] === v ? null : v;
+      syncCompleteSource(editDate, entry);
       persistAndRefresh();
     });
   });
@@ -1334,7 +1738,8 @@
         lunch: s.lunch,
         dinner: s.dinner,
         lunchOverride: s.lunchOverride != null ? s.lunchOverride : null,
-        dinnerOverride: s.dinnerOverride != null ? s.dinnerOverride : null
+        dinnerOverride: s.dinnerOverride != null ? s.dinnerOverride : null,
+        completeSource: "sameDay"
       };
     });
     persistAndRefresh();
