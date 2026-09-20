@@ -403,6 +403,142 @@
     cursor: pointer;
   }
 
+
+  .week-line {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .week-line .emoji {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    flex-shrink: 0;
+  }
+  .week-line .text {
+    flex: 1;
+    min-width: 0;
+  }
+  .week-line .headline {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    margin: 0;
+  }
+  .week-line .sub {
+    margin: 4px 0 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .week-line .yen {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .goal-block {
+    grid-column: 1 / -1;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+  .goal-block[hidden] { display: none; }
+  .goal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .goal-head .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .goal-head .nums {
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .goal-bar {
+    height: 10px;
+    background: #f0ebe3;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .goal-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #2a7a4b, #3d9a62);
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.25s ease;
+  }
+  .goal-foot {
+    margin: 8px 0 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .goal-foot strong {
+    color: var(--accent-dark);
+    font-weight: 700;
+  }
+
+  .day-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .day-tabs button {
+    border: 1.5px solid var(--line);
+    background: #faf9f7;
+    border-radius: 12px;
+    padding: 10px 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .day-tabs button:active { transform: scale(0.97); }
+  .day-tabs button.on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-dark);
+  }
+  .day-tabs button .sublabel {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .day-tabs button.on .sublabel { color: var(--accent-dark); opacity: 0.8; }
+  .edit-hint {
+    margin: 0 0 12px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: #f7f4ef;
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .edit-hint[hidden] { display: none; }
+  .settings-grid.goal-row {
+    grid-template-columns: 1fr;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0ebe3;
+  }
+
   @media (min-width: 480px) {
     .overlay { align-items: center; }
     .sheet { border-radius: 20px; }
@@ -419,6 +555,14 @@
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <span class="pill">端末内のみ</span>
         <button type="button" class="icon-btn" id="btnOpenSettings" title="設定" aria-label="設定を開く">⚙</button>
+      </div>
+    </div>
+
+    <div class="week-line" id="weekLine" aria-live="polite">
+      <div class="emoji" id="weekEmoji" aria-hidden="true">✨</div>
+      <div class="text">
+        <p class="headline" id="weekHeadline">今週の一言を読み込み中…</p>
+        <p class="sub" id="weekSub">今週＝月曜〜日曜</p>
       </div>
     </div>
 
@@ -440,13 +584,34 @@
         <div class="label">自炊連続日</div>
         <div class="value" style="font-size:1.45rem"><span id="streak">0</span><span class="unit">日</span></div>
       </div>
+      <div class="goal-block" id="goalBlock" hidden>
+        <div class="goal-head">
+          <div class="label">今月の目標ライン</div>
+          <div class="nums"><span id="goalProgressLabel">0 / 0円</span></div>
+        </div>
+        <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="goalBarWrap">
+          <span id="goalBarFill"></span>
+        </div>
+        <p class="goal-foot" id="goalFoot"></p>
+      </div>
     </div>
 
     <section class="card">
       <h2>
-        今日の記録
+        <span id="recordTitle">今日の記録</span>
         <span class="date-chip" id="todayLabel"></span>
       </h2>
+      <div class="day-tabs" role="tablist" aria-label="記録する日">
+        <button type="button" id="tabToday" class="on" role="tab" aria-selected="true">
+          今日
+          <span class="sublabel" id="tabTodaySub"></span>
+        </button>
+        <button type="button" id="tabYesterday" role="tab" aria-selected="false">
+          昨日
+          <span class="sublabel" id="tabYesterdaySub"></span>
+        </button>
+      </div>
+      <p class="edit-hint" id="yesterdayHint" hidden>昨日の昼・夜が未記録・間違いならここで直せます。保存は自動です。</p>
       <div class="meal">
         <h3>昼</h3>
         <div class="taps" data-slot="lunch">
@@ -500,6 +665,11 @@
             <input type="number" id="dinnerConv" min="0" step="10" inputmode="numeric" />
           </label>
         </div>
+        <div class="settings-grid goal-row">
+          <label><span>今月の節約目標（円・空欄で非表示）</span>
+            <input type="number" id="monthlyGoal" min="0" step="100" inputmode="numeric" placeholder="例：10000" />
+          </label>
+        </div>
         <div class="settings-actions">
           <button type="button" class="btn" id="btnSeed">サンプル数日</button>
           <button type="button" class="btn btn-danger" id="btnClear">ログをクリア</button>
@@ -551,25 +721,46 @@
       dinnerOut: 1200,
       homeCook: 300,
       lunchConv: 600,
-      dinnerConv: 700
+      dinnerConv: 700,
+      monthlyGoal: 10000
     },
     logs: {},
     onboardingDone: false
   };
 
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function toISODate(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
   function todayStr() {
+    return toISODate(new Date());
+  }
+
+  function yesterdayStr() {
     const d = new Date();
-    return (
-      d.getFullYear() +
-      "-" +
-      String(d.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(d.getDate()).padStart(2, "0")
-    );
+    d.setDate(d.getDate() - 1);
+    return toISODate(d);
+  }
+
+  function shortDate(iso) {
+    const parts = iso.split("-");
+    return Number(parts[1]) + "/" + Number(parts[2]);
   }
 
   function formatYen(n) {
     return String(Math.floor(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  /** Normalize monthlyGoal: number >= 0, or null if cleared / invalid. */
+  function normalizeGoal(raw) {
+    if (raw === null || raw === undefined || raw === "") return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return Math.floor(n);
   }
 
   function load() {
@@ -577,8 +768,16 @@
       const raw = localStorage.getItem(KEY);
       if (!raw) return structuredClone(defaults);
       const data = JSON.parse(raw);
+      const settings = Object.assign({}, defaults.settings, data.settings || {});
+      // Backward compat: old saves without monthlyGoal get default 10000 via Object.assign.
+      // Explicit null/0 from newer clients means "cleared".
+      if (data.settings && Object.prototype.hasOwnProperty.call(data.settings, "monthlyGoal")) {
+        settings.monthlyGoal = normalizeGoal(data.settings.monthlyGoal);
+      } else {
+        settings.monthlyGoal = defaults.settings.monthlyGoal;
+      }
       return {
-        settings: Object.assign({}, defaults.settings, data.settings || {}),
+        settings: settings,
         logs: data.logs || {},
         onboardingDone: !!data.onboardingDone
       };
@@ -592,6 +791,8 @@
   }
 
   let state = load();
+  /** Which day the meal form edits: today or yesterday ISO. */
+  let editDate = todayStr();
 
   const els = {
     lunchOut: document.getElementById("lunchOut"),
@@ -599,9 +800,11 @@
     homeCook: document.getElementById("homeCook"),
     lunchConv: document.getElementById("lunchConv"),
     dinnerConv: document.getElementById("dinnerConv"),
+    monthlyGoal: document.getElementById("monthlyGoal"),
     lunchOverride: document.getElementById("lunchOverride"),
     dinnerOverride: document.getElementById("dinnerOverride"),
     todayLabel: document.getElementById("todayLabel"),
+    recordTitle: document.getElementById("recordTitle"),
     todaySave: document.getElementById("todaySave"),
     monthSave: document.getElementById("monthSave"),
     yearSave: document.getElementById("yearSave"),
@@ -614,20 +817,32 @@
     obDinnerOut: document.getElementById("obDinnerOut"),
     obHomeCook: document.getElementById("obHomeCook"),
     obLunchConv: document.getElementById("obLunchConv"),
-    obDinnerConv: document.getElementById("obDinnerConv")
+    obDinnerConv: document.getElementById("obDinnerConv"),
+    weekHeadline: document.getElementById("weekHeadline"),
+    weekSub: document.getElementById("weekSub"),
+    weekEmoji: document.getElementById("weekEmoji"),
+    goalBlock: document.getElementById("goalBlock"),
+    goalProgressLabel: document.getElementById("goalProgressLabel"),
+    goalBarFill: document.getElementById("goalBarFill"),
+    goalBarWrap: document.getElementById("goalBarWrap"),
+    goalFoot: document.getElementById("goalFoot"),
+    tabToday: document.getElementById("tabToday"),
+    tabYesterday: document.getElementById("tabYesterday"),
+    tabTodaySub: document.getElementById("tabTodaySub"),
+    tabYesterdaySub: document.getElementById("tabYesterdaySub"),
+    yesterdayHint: document.getElementById("yesterdayHint")
   };
 
-  function ensureToday() {
-    const t = todayStr();
-    if (!state.logs[t]) {
-      state.logs[t] = {
+  function ensureDay(iso) {
+    if (!state.logs[iso]) {
+      state.logs[iso] = {
         lunch: null,
         dinner: null,
         lunchOverride: null,
         dinnerOverride: null
       };
     }
-    return state.logs[t];
+    return state.logs[iso];
   }
 
   function effectiveYen(slot, choice, override) {
@@ -677,6 +892,34 @@
     return sum;
   }
 
+  /** Monday 00:00 local → Sunday of the calendar week containing `ref`. */
+  function weekRangeMonSun(ref) {
+    const d = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+    const dow = d.getDay(); // 0 Sun … 6 Sat
+    const monOffset = dow === 0 ? -6 : 1 - dow;
+    const mon = new Date(d);
+    mon.setDate(d.getDate() + monOffset);
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    return { start: mon, end: sun, startISO: toISODate(mon), endISO: toISODate(sun) };
+  }
+
+  function weekTotal() {
+    const range = weekRangeMonSun(new Date());
+    let sum = 0;
+    let daysWithLog = 0;
+    Object.keys(state.logs).forEach(function (k) {
+      if (k >= range.startISO && k <= range.endISO) {
+        const e = state.logs[k];
+        if (e && (e.lunch || e.dinner)) {
+          daysWithLog++;
+          sum += daySave(e);
+        }
+      }
+    });
+    return { sum: sum, daysWithLog: daysWithLog, range: range };
+  }
+
   function annualized(monthSum) {
     const day = new Date().getDate();
     if (day <= 0) return 0;
@@ -687,12 +930,7 @@
     let streak = 0;
     const d = new Date();
     for (let i = 0; i < 400; i++) {
-      const key =
-        d.getFullYear() +
-        "-" +
-        String(d.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(d.getDate()).padStart(2, "0");
+      const key = toISODate(d);
       const entry = state.logs[key];
       if (!entry || !isBothCook(entry)) break;
       streak++;
@@ -706,11 +944,6 @@
     if (choice === "外食") return "out";
     if (choice === "コンビニ") return "conv";
     return "empty";
-  }
-
-  function shortDate(iso) {
-    const parts = iso.split("-");
-    return Number(parts[1]) + "/" + Number(parts[2]);
   }
 
   function renderHistory() {
@@ -760,12 +993,28 @@
     els.homeCook.value = s.homeCook;
     els.lunchConv.value = s.lunchConv;
     els.dinnerConv.value = s.dinnerConv;
+    const g = normalizeGoal(s.monthlyGoal);
+    els.monthlyGoal.value = g != null ? g : "";
   }
 
-  function syncTodayUI() {
+  function syncDayTabs() {
     const t = todayStr();
-    els.todayLabel.textContent = t;
-    const entry = ensureToday();
+    const y = yesterdayStr();
+    els.tabTodaySub.textContent = shortDate(t);
+    els.tabYesterdaySub.textContent = shortDate(y);
+    const isToday = editDate === t;
+    els.tabToday.classList.toggle("on", isToday);
+    els.tabYesterday.classList.toggle("on", !isToday);
+    els.tabToday.setAttribute("aria-selected", isToday ? "true" : "false");
+    els.tabYesterday.setAttribute("aria-selected", isToday ? "false" : "true");
+    els.recordTitle.textContent = isToday ? "今日の記録" : "昨日の記録";
+    els.yesterdayHint.hidden = isToday;
+  }
+
+  function syncEditUI() {
+    syncDayTabs();
+    els.todayLabel.textContent = editDate;
+    const entry = ensureDay(editDate);
     document.querySelectorAll(".taps").forEach(function (group) {
       const slot = group.getAttribute("data-slot");
       const val = entry[slot];
@@ -786,28 +1035,93 @@
         : "";
   }
 
+  function renderWeekLine() {
+    const w = weekTotal();
+    const label =
+      "今週（月〜日）· " +
+      shortDate(w.range.startISO) +
+      "〜" +
+      shortDate(w.range.endISO);
+    els.weekSub.textContent = label;
+    if (w.daysWithLog === 0) {
+      els.weekEmoji.textContent = "📝";
+      els.weekHeadline.innerHTML = "今週はまだ記録なし。昼と夜を選んでみよう";
+    } else if (w.sum <= 0) {
+      els.weekEmoji.textContent = "💪";
+      els.weekHeadline.innerHTML =
+        "今週はまだ浮きゼロ。自炊で外食より浮かせよう";
+    } else {
+      els.weekEmoji.textContent = "✨";
+      els.weekHeadline.innerHTML =
+        '今週は外食より<span class="yen">¥' +
+        formatYen(w.sum) +
+        "</span>浮いた";
+    }
+  }
+
+  function renderGoal(monthSum) {
+    const goal = normalizeGoal(state.settings.monthlyGoal);
+    if (goal == null) {
+      els.goalBlock.hidden = true;
+      return;
+    }
+    els.goalBlock.hidden = false;
+    const pct = Math.min(100, Math.floor((monthSum / goal) * 100));
+    const remain = Math.max(0, goal - monthSum);
+    els.goalProgressLabel.textContent =
+      formatYen(monthSum) + " / " + formatYen(goal) + "円";
+    els.goalBarFill.style.width = pct + "%";
+    els.goalBarWrap.setAttribute("aria-valuenow", String(pct));
+    els.goalBarWrap.setAttribute("aria-valuemax", "100");
+    if (monthSum >= goal) {
+      els.goalFoot.innerHTML =
+        "<strong>目標達成！</strong> 今月の節約が目標ラインに届きました。";
+    } else {
+      els.goalFoot.innerHTML =
+        "あと <strong>" + formatYen(remain) + "円</strong>（" + pct + "%）";
+    }
+  }
+
   function renderMetrics() {
-    const entry = ensureToday();
-    els.todaySave.textContent = formatYen(daySave(entry));
+    const todayEntry = ensureDay(todayStr());
+    els.todaySave.textContent = formatYen(daySave(todayEntry));
     const month = monthTotal();
     els.monthSave.textContent = formatYen(month);
     els.yearSave.textContent = formatYen(annualized(month));
     els.streak.textContent = String(cookStreak());
+    renderWeekLine();
+    renderGoal(month);
   }
 
   function persistAndRefresh() {
     save(state);
-    syncTodayUI();
+    syncEditUI();
     renderMetrics();
     renderHistory();
   }
+
+  function setEditDate(iso) {
+    editDate = iso;
+    // Keep today/yesterday only — clamp if clock crossed midnight mid-session.
+    const t = todayStr();
+    const y = yesterdayStr();
+    if (editDate !== t && editDate !== y) editDate = t;
+    persistAndRefresh();
+  }
+
+  els.tabToday.addEventListener("click", function () {
+    setEditDate(todayStr());
+  });
+  els.tabYesterday.addEventListener("click", function () {
+    setEditDate(yesterdayStr());
+  });
 
   document.querySelectorAll(".taps").forEach(function (group) {
     group.addEventListener("click", function (e) {
       const btn = e.target.closest("button");
       if (!btn) return;
       const slot = group.getAttribute("data-slot");
-      const entry = ensureToday();
+      const entry = ensureDay(editDate);
       const v = btn.getAttribute("data-v");
       entry[slot] = entry[slot] === v ? null : v;
       persistAndRefresh();
@@ -823,9 +1137,17 @@
     }
   );
 
+  els.monthlyGoal.addEventListener("change", function () {
+    const v = els.monthlyGoal.value.trim();
+    state.settings.monthlyGoal = v === "" ? null : normalizeGoal(v);
+    if (state.settings.monthlyGoal == null) els.monthlyGoal.value = "";
+    else els.monthlyGoal.value = state.settings.monthlyGoal;
+    persistAndRefresh();
+  });
+
   function bindOverride(inputEl, key) {
     inputEl.addEventListener("change", function () {
-      const entry = ensureToday();
+      const entry = ensureDay(editDate);
       const v = inputEl.value.trim();
       entry[key] = v === "" ? null : Number(v);
       persistAndRefresh();
@@ -837,6 +1159,7 @@
   document.getElementById("btnClear").addEventListener("click", function () {
     if (!confirm("ログをすべて削除しますか？（設定は残ります）")) return;
     state.logs = {};
+    editDate = todayStr();
     persistAndRefresh();
   });
 
@@ -853,12 +1176,7 @@
     samples.forEach(function (s) {
       const d = new Date(base);
       d.setDate(d.getDate() + s.offset);
-      const key =
-        d.getFullYear() +
-        "-" +
-        String(d.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(d.getDate()).padStart(2, "0");
+      const key = toISODate(d);
       state.logs[key] = {
         lunch: s.lunch,
         dinner: s.dinner,
