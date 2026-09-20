@@ -786,6 +786,91 @@
   details.settings > summary { margin-bottom: 0; }
   details.settings[open] > summary { margin-bottom: 14px; }
 
+  /* —— Calendar fold (past logs) —— */
+  details.cal-fold {
+    margin: 0;
+  }
+  details.cal-fold > summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--ink);
+  }
+  details.cal-fold > summary::-webkit-details-marker { display: none; }
+  details.cal-fold > summary::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--muted);
+    border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg);
+    transition: transform 0.2s;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  details.cal-fold[open] > summary::after {
+    transform: rotate(-135deg);
+    margin-top: 4px;
+  }
+  details.cal-fold > summary { margin-bottom: 0; }
+  details.cal-fold[open] > summary { margin-bottom: 14px; }
+  details.cal-fold .cal-fold-sub {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  details.cal-fold .cal-nav {
+    margin-top: 2px;
+  }
+  .cal-card {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+  .edit-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  }
+  .edit-bar[hidden] { display: none; }
+  .edit-bar .edit-hint {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .btn-back-today {
+    flex-shrink: 0;
+    border: 1px solid var(--accent);
+    background: var(--card);
+    color: var(--accent-dark);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 7px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    transition: background 0.15s, transform 0.08s;
+  }
+  .btn-back-today:hover { background: var(--accent-soft); }
+  .btn-back-today:active { transform: scale(0.96); }
+
   footer.disclaimer {
     text-align: center;
     font-size: 0.68rem;
@@ -916,24 +1001,6 @@
       </div>
     </div>
 
-    <section class="card cal-card">
-      <div class="cal-nav">
-        <button type="button" class="icon-btn" id="calPrev" aria-label="前の月">‹</button>
-        <h2 id="calMonthLabel">2026年9月</h2>
-        <button type="button" class="icon-btn" id="calNext" aria-label="次の月">›</button>
-      </div>
-      <div class="cal-weekdays" aria-hidden="true">
-        <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
-      </div>
-      <div class="cal-grid" id="calGrid" role="grid" aria-label="記録カレンダー"></div>
-      <div class="cal-legend">
-        <span><i class="none"></i>未入力</span>
-        <span><i class="partial"></i>一部入力</span>
-        <span><i class="full"></i>入力済み</span>
-        <span><i class="cook"></i>両食自炊</span>
-      </div>
-    </section>
-
     <section class="card" id="recordCard">
       <h2>
         <span id="recordTitle">今日の記録</span>
@@ -949,7 +1016,10 @@
           <span class="sublabel" id="tabYesterdaySub"></span>
         </button>
       </div>
-      <p class="edit-hint" id="editHint" hidden>過去日の記録を編集中。保存は自動です。編集できるのは直近30日です。</p>
+      <div class="edit-bar" id="editBar" hidden>
+        <p class="edit-hint" id="editHint">過去日の記録を編集中。保存は自動です。編集できるのは直近30日です。</p>
+        <button type="button" class="btn-back-today" id="btnBackToday">今日に戻る</button>
+      </div>
       <div class="meal">
         <h3>昼</h3>
         <div class="taps" data-slot="lunch">
@@ -975,6 +1045,32 @@
         </div>
       </div>
       <p class="streak-note">自炊連続＝昼も夜も「自炊」が途切れず続く日数（後から埋めても復元可）。記録連続＝その日のうちに両食を記録した連続日数。</p>
+    </section>
+
+    <section class="card cal-card">
+      <details class="cal-fold" id="calFold">
+        <summary>
+          <span>
+            過去の記録・穴埋め（カレンダー）
+            <span class="cal-fold-sub">タップで月表示・他の日を編集</span>
+          </span>
+        </summary>
+        <div class="cal-nav">
+          <button type="button" class="icon-btn" id="calPrev" aria-label="前の月">‹</button>
+          <h2 id="calMonthLabel">2026年9月</h2>
+          <button type="button" class="icon-btn" id="calNext" aria-label="次の月">›</button>
+        </div>
+        <div class="cal-weekdays" aria-hidden="true">
+          <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+        </div>
+        <div class="cal-grid" id="calGrid" role="grid" aria-label="記録カレンダー"></div>
+        <div class="cal-legend">
+          <span><i class="none"></i>未入力</span>
+          <span><i class="partial"></i>一部入力</span>
+          <span><i class="full"></i>入力済み</span>
+          <span><i class="cook"></i>両食自炊</span>
+        </div>
+      </details>
     </section>
 
     <section class="card">
@@ -1179,7 +1275,10 @@
     tabYesterday: document.getElementById("tabYesterday"),
     tabTodaySub: document.getElementById("tabTodaySub"),
     tabYesterdaySub: document.getElementById("tabYesterdaySub"),
-    editHint: document.getElementById("editHint")
+    editHint: document.getElementById("editHint"),
+    editBar: document.getElementById("editBar"),
+    btnBackToday: document.getElementById("btnBackToday"),
+    calFold: document.getElementById("calFold")
   };
 
   function ensureDay(iso) {
@@ -1434,15 +1533,15 @@
     els.tabYesterday.setAttribute("aria-selected", isYest ? "true" : "false");
     if (isToday) {
       els.recordTitle.textContent = "今日の記録";
-      els.editHint.hidden = true;
+      els.editBar.hidden = true;
     } else if (isYest) {
       els.recordTitle.textContent = "昨日の記録";
-      els.editHint.hidden = false;
+      els.editBar.hidden = false;
       els.editHint.textContent =
         "昨日の昼・夜が未記録・間違いならここで直せます。保存は自動です。";
     } else {
       els.recordTitle.textContent = shortDate(editDate) + "の記録";
-      els.editHint.hidden = false;
+      els.editBar.hidden = false;
       els.editHint.textContent =
         "過去日の記録を編集中。保存は自動です。編集できるのは直近" +
         EDIT_LOOKBACK_DAYS +
@@ -1598,6 +1697,8 @@
               : "未入力";
         btn.addEventListener("click", function () {
           setEditDate(iso);
+          const rc = document.getElementById("recordCard");
+          if (rc) rc.scrollIntoView({ behavior: "smooth", block: "start" });
         });
       }
 
@@ -1669,6 +1770,9 @@
   });
   els.tabYesterday.addEventListener("click", function () {
     setEditDate(yesterdayStr());
+  });
+  els.btnBackToday.addEventListener("click", function () {
+    setEditDate(todayStr());
   });
 
   document.querySelectorAll(".taps").forEach(function (group) {
